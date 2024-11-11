@@ -46,7 +46,7 @@ scene.add(floor);
 
 const poolGeometry = new THREE.PlaneGeometry(8, 8);
 const poolMaterial = new THREE.MeshBasicMaterial({
-  color: 0x48dafe,
+  color: skyblueColor,
   side: THREE.DoubleSide
 });
 
