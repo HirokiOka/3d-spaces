@@ -6,6 +6,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 
 let scene, camera, renderer, composer;
 let stars, grid, floatingObjects = [];
+let pyramid, pool, boxOne, boxTwo, boxThree;
 
 init();
 animate();
@@ -64,11 +65,44 @@ function init() {
 
        
   //Floating geometries
+  const pyramidGeometry = new THREE.ConeGeometry(4, 8, 4);
+  const pyramidMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  pyramid = new THREE.Mesh(pyramidGeometry, pyramidMaterial);
+  pyramid.position.set(14, -2, 8);
+  pyramid.rotation.z = Math.PI / 2;
+  scene.add(pyramid);
+
+  const poolGeometry = new THREE.CylinderGeometry(2, 2, 20, 10, 2, false);
+  const poolMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  pool = new THREE.Mesh(poolGeometry, poolMaterial);
+  pool.position.set(-8, 8, 8);
+  pool.rotation.y = Math.PI / 4;
+  pool.rotation.z = - Math.PI / 6;
+  scene.add(pool);
+
+  const boxGeometry = new THREE.BoxGeometry(2, 2, 12);
+  const boxMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  boxOne = new THREE.Mesh(boxGeometry, boxMaterial);
+  boxOne.position.set(16, 6, 8);
+  scene.add(boxOne);
+
+  const boxTwoGeometry = new THREE.BoxGeometry(2, 2, 12);
+  const boxTwoMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  boxTwo = new THREE.Mesh(boxTwoGeometry, boxTwoMaterial);
+  boxTwo.position.set(-12, 6, 8);
+  scene.add(boxTwo);
+
+  const boxThreeGeometry = new THREE.BoxGeometry(12, 2, 2);
+  const boxThreeMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  boxThree = new THREE.Mesh(boxThreeGeometry, boxThreeMaterial);
+  boxThree.position.set(2, 9, 12);
+  scene.add(boxThree);
+  /*
   const geometries = [
       new THREE.TorusGeometry(1, 0.3, 16, 100),
       new THREE.DodecahedronGeometry(2),
       new THREE.SphereGeometry(2, 32, 32),
-      new THREE.CylinderGeometry(2, 2, 20, 20, 2, false),
+      new THREE.ConeGeometry(1, 2, 4),
   ];
 
   for (let i = 0; i < 5; i++) {
@@ -76,10 +110,11 @@ function init() {
         flatShading: true,
       });
       const object = new THREE.Mesh(geometries[Math.floor(Math.random() * geometries.length)], material);
-      object.position.set(Math.random() * 30 - 5, Math.random() * 8 + 2, Math.random() * 2);
+      object.position.set(Math.random() * 30 - 20, Math.random() * 8 + 2, Math.random() * 2);
       scene.add(object);
       floatingObjects.push(object);
   }
+  */
 
   // Lights
   const pinkLight = new THREE.PointLight(0xff00ff, 3, 50);
@@ -188,12 +223,15 @@ function animate() {
 
   //stars.rotation.y += 0.0005;
   grid.material.uniforms.time.value += 0.008;
+  pyramid.rotation.y += 0.01;
 
+  /*
   floatingObjects.forEach((obj, index) => {
       obj.rotation.x += 0.01 * index;
       obj.rotation.y += 0.001 * index;
       obj.position.y += Math.sin(Date.now() * 0.001 + index) * 0.02;
   });
+  */
 
   composer.render();
 }
