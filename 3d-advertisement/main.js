@@ -4,16 +4,34 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
-const displayWidth = 8950;
-const displayHeight = 1080;
 let scene, camera, renderer, composer;
 let grid;
 let stars = [];
-let pyramid, cylinder, rightSideWall, piller, secondFloor, sphere, torus, pole, poleTwo, sphereTwo;
+let pyramid, cylinder, rightSideWall, piller, secondFloor, rotateBox, rotateBoxTwo, torus;
+let futureSphere;
 let boxes = [];
 
 init();
 animate();
+
+function createTextTexture(text, bgColor = "#000", fontSize = 96, width = 256, height = 256) {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    ctx.fillText(text, width / 2, height / 2);
+
+    return new THREE.CanvasTexture(canvas);
+}
 
 function createGrid() {
   const gridGeometry = new THREE.PlaneGeometry(50, 50, 50, 10);
@@ -84,29 +102,39 @@ function init() {
   const poleGeometry = new THREE.CylinderGeometry(1.4, 1.4, 12, 10);
   const poleMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
   const pole = new THREE.Mesh(poleGeometry, poleMaterial);
-  const poleX = -16;
+  const poleX = -20;
   const poleY = 3;
-  const poleZ = 5;
+  const poleZ = 8;
   pole.position.set(poleX, poleY, poleZ);
   scene.add(pole);
   
-  const sphereGeometry = new THREE.SphereGeometry(1.7, 3, 3);
-  const sphereMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
-  sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-  sphere.position.set(poleX, poleY + 9, poleZ);
-  scene.add(sphere);
+  const rotateBoxGeometry = new THREE.BoxGeometry(2.4, 2.4, 2.4);
+  const rotateBoxMaterials = [
+    new THREE.MeshBasicMaterial({ map: createTextTexture("媒体", "#1e0f8e", 108) }),
+    new THREE.MeshBasicMaterial({ map: createTextTexture("情報", "#000eee", 108) }),
+    new THREE.MeshNormalMaterial({ flatShading: true }),
+    new THREE.MeshNormalMaterial({ flatShading: true }),
+    new THREE.MeshNormalMaterial({ flatShading: true }),
+    new THREE.MeshNormalMaterial({ flatShading: true }),
+    new THREE.MeshNormalMaterial({ flatShading: true }),
+  ];
+  rotateBox = new THREE.Mesh(rotateBoxGeometry, rotateBoxMaterials);
+  rotateBox.position.set(poleX, poleY + 9, poleZ);
+  rotateBox.rotation.y = Math.PI;
+  scene.add(rotateBox);
+
 
   const poleTwoGeometry = new THREE.CylinderGeometry(1.4, 1.4, 8, 10);
   const poleTwo = new THREE.Mesh(poleTwoGeometry, poleMaterial);
-  const poleTwoX = -16;
+  const poleTwoX = -22;
   const poleTwoY = 1;
-  const poleTwoZ = 11;
+  const poleTwoZ = 13;
   poleTwo.position.set(poleTwoX, poleTwoY, poleTwoZ);
   scene.add(poleTwo);
   
-  sphereTwo = new THREE.Mesh(sphereGeometry, sphereMaterial);
-  sphereTwo.position.set(poleTwoX, poleTwoY + 7, poleTwoZ);
-  scene.add(sphereTwo);
+  rotateBoxTwo = new THREE.Mesh(rotateBoxGeometry, rotateBoxMaterials);
+  rotateBoxTwo.position.set(poleTwoX, poleTwoY + 7, poleTwoZ);
+  scene.add(rotateBoxTwo);
 
   // Torus
   const torusGeometry = new THREE.TorusGeometry(1, 0.3, 16, 100);
@@ -117,10 +145,10 @@ function init() {
   scene.add(torus);
 
   // Pyramid
-  const pyramidGeometry = new THREE.ConeGeometry(4, 12, 4);
+  const pyramidGeometry = new THREE.ConeGeometry(6, 12, 4);
   const pyramidMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
   pyramid = new THREE.Mesh(pyramidGeometry, pyramidMaterial);
-  pyramid.position.set(-10, -2, 8);
+  pyramid.position.set(-10, 0, 8);
   scene.add(pyramid);
 
   // Cylinder
@@ -133,15 +161,24 @@ function init() {
 
   // Wall
   const wallGeometry = new THREE.BoxGeometry(0.8, 22, 18);
-  const wallMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
-  rightSideWall = new THREE.Mesh(wallGeometry, wallMaterial);
-  rightSideWall.position.set(18, 2, 9);
+  const wallTexts = "あなたの";
+  const wallMaterials = [
+    new THREE.MeshNormalMaterial({ flatShading: true }),
+    new THREE.MeshBasicMaterial({ map: createTextTexture(wallTexts, "#01adba", 64) }),
+    new THREE.MeshNormalMaterial({ flatShading: true }),
+    new THREE.MeshNormalMaterial({ flatShading: true }),
+    new THREE.MeshNormalMaterial({ flatShading: true }),
+    new THREE.MeshNormalMaterial({ flatShading: true }),
+    new THREE.MeshNormalMaterial({ flatShading: true }),
+  ];
+  rightSideWall = new THREE.Mesh(wallGeometry, wallMaterials);
+  rightSideWall.position.set(22, 2, 9);
   scene.add(rightSideWall);
 
   // 2F Boxes
-  const boxesGeometry = new THREE.BoxGeometry(3, 2, 2);
-  const boxesMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
-  for (let i = 0; i < 4; i++) {
+  const boxesGeometry = new THREE.SphereGeometry(1.2, 4, 4);
+  for (let i = 0; i < 3; i++) {
+    const boxesMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
     const box = new THREE.Mesh(boxesGeometry, boxesMaterial);
     box.position.set(i * 4 - 15, 18, -4);
     box.rotation.y = Math.PI / 4 * i;
@@ -150,11 +187,26 @@ function init() {
   }
 
   // Left Piller
+  const pillerText = "未来";
   const pillerGeometry = new THREE.BoxGeometry(10, 10, 3);
-  const pillerMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
-  piller = new THREE.Mesh(pillerGeometry, pillerMaterial);
-  piller.position.set(-25, -2, 14);
+  const pillerMaterials = [
+      new THREE.MeshNormalMaterial({ flatShading: true }),
+      new THREE.MeshNormalMaterial({ flatShading: true }),
+      new THREE.MeshNormalMaterial({ flatShading: true }),
+      new THREE.MeshNormalMaterial({ flatShading: true }),
+      new THREE.MeshBasicMaterial({ map: createTextTexture(pillerText, "#280247", 84) }),
+      new THREE.MeshNormalMaterial({ flatShading: true }),
+  ];
+  piller = new THREE.Mesh(pillerGeometry, pillerMaterials);
+  piller.position.set(-50, -2, 12);
+  piller.rotation.y = Math.PI / 4;
   scene.add(piller);
+
+  const futureSphereGeometry = new THREE.SphereGeometry(4, 1, 2);
+  const futureSphereMaterial = new THREE.MeshNormalMaterial({ flatShading: false });
+  futureSphere = new THREE.Mesh(futureSphereGeometry, futureSphereMaterial);
+  futureSphere.position.set(-50, 8, 12);
+  scene.add(futureSphere);
 
   const grid = createGrid();
   scene.add(grid);
@@ -173,7 +225,7 @@ function init() {
   composer.addPass(new RenderPass(scene, camera));
   const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
-    1.0, 1.2, 0.85
+    0.7, 0.8, 0.7
   );
   composer.addPass(bloomPass);
 
@@ -182,15 +234,14 @@ function init() {
 
 // Sun
 function createRetroSun() {
-  // Create canvas for the sun
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   canvas.width = 512;
   canvas.height = 128;
 
-  ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+  ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.font = 'Bold 100px sans-serif';
+  ctx.font = 'Bold 100px Arial';
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -203,7 +254,7 @@ function createRetroSun() {
   const textGeometry = new THREE.PlaneGeometry(8, 2); 
   const textMesh = new THREE.Mesh(textGeometry, textMaterial);
 
-  textMesh.position.set(0, 6, 9);
+  textMesh.position.set(0.4, 6, 9);
   scene.add(textMesh);
 
   const sunGeometry = new THREE.SphereGeometry(10, 32, 32);
@@ -238,8 +289,9 @@ function createRetroSun() {
 createRetroSun();
 
 // Stars
-const starCount = 700;
+const starCount = 400;
 const positions = new Float32Array(starCount * 3);
+
 
 for (let i = 0; i < starCount * 3; i++) {
     positions[i] = (Math.random() - 0.5) * 100;
@@ -251,6 +303,7 @@ starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 const starMaterial = new THREE.PointsMaterial({
     color: 0x00ffff,
     size: 0.2,
+    sizeAttenuation: true,
     transparent: true,
 });
 
@@ -258,14 +311,18 @@ const star = new THREE.Points(starGeometry, starMaterial);
 stars.push(star);
 scene.add(star);
 
+
 function updateObjects() {
   grid.material.uniforms.time.value += 0.008;
   pyramid.rotation.y -= 0.01;
   pyramid.rotation.z += 0.01;
-  sphere.rotation.y -= 0.01;
-  sphereTwo.rotation.y -= 0.01;
+  rotateBox.rotation.y -= 0.02;
+  rotateBoxTwo.rotation.y -= 0.02;
   torus.rotation.y -= 0.01;
   cylinder.rotation.y -= 0.004;
+  boxes.forEach((box, idx) => {
+    box.rotation.y = Math.sin(performance.now() * 0.001 + idx) * 0.5;
+  });
 }
 
 function animate() {
