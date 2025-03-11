@@ -5,8 +5,13 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 let scene, camera, renderer, composer;
-let stars, grid, floatingObjects = [];
-let pyramid, pool, boxOne, boxTwo, boxThree;
+let grid;
+let stars = [];
+let pyramid, cylinder, rightSideWall, piller;
+let boxes = [];
+let secondFloor;
+let sphere;
+let torus;
 
 init();
 animate();
@@ -62,59 +67,83 @@ function init() {
     grid.rotation.x = -Math.PI / 2;
     scene.add(grid);
 
+  //Sun Pedestal
+  const pedestalGeometry = new THREE.CylinderGeometry(10, 10, 2, 5);
+  const pedestalMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
+  pedestal.position.set(0, -2, -10);
+  scene.add(pedestal);
 
-       
+  // Second floor
+  const secondFloorGeometry = new THREE.BoxGeometry(40, 1, 20);
+  const secondFloorMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  secondFloor = new THREE.Mesh(secondFloorGeometry, secondFloorMaterial);
+  secondFloor.position.set(3, 16, -14);
+  scene.add(secondFloor);
+
+  // Pole
+  const poleGeometry = new THREE.CylinderGeometry(1.0, 1.0, 12, 10);
+  const poleMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  const poleTwo = new THREE.Mesh(poleGeometry, poleMaterial);
+  const poleTwoX = -14;
+  const poleTwoY = 4;
+  const poleTwoZ = 4;
+  poleTwo.position.set(poleTwoX, poleTwoY, poleTwoZ);
+  scene.add(poleTwo);
+  
+  // Spehre
+  const sphereGeometry = new THREE.SphereGeometry(1.7, 12, 12);
+  const sphereMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+  sphere.position.set(poleTwoX, poleTwoY + 9, poleTwoZ);
+  scene.add(sphere);
+
+  // Torus
+  const torusGeometry = new THREE.TorusGeometry(1, 0.3, 16, 100);
+  const torusMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  torus = new THREE.Mesh(torusGeometry, torusMaterial);
+  torus.position.set(12, 6, 15);
+  torus.rotation.x = Math.PI / 4;
+  scene.add(torus);
+
   //Floating geometries
-  const pyramidGeometry = new THREE.ConeGeometry(4, 8, 4);
+  const pyramidGeometry = new THREE.ConeGeometry(4, 6, 4);
   const pyramidMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
   pyramid = new THREE.Mesh(pyramidGeometry, pyramidMaterial);
-  pyramid.position.set(14, -2, 8);
+  pyramid.position.set(-10, -2, 8);
   pyramid.rotation.z = Math.PI / 2;
   scene.add(pyramid);
 
-  const poolGeometry = new THREE.CylinderGeometry(2, 2, 20, 10, 2, false);
-  const poolMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
-  pool = new THREE.Mesh(poolGeometry, poolMaterial);
-  pool.position.set(-8, 8, 8);
-  pool.rotation.y = Math.PI / 4;
-  pool.rotation.z = - Math.PI / 6;
-  scene.add(pool);
+  const cylinderGeometry = new THREE.CylinderGeometry(2, 2, 70, 10, 4, false);
+  const cylinderMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+  cylinder.position.set(12, 18, -15);
+  cylinder.rotation.x = -Math.PI / 4;
+  scene.add(cylinder);
 
-  const boxGeometry = new THREE.BoxGeometry(2, 2, 12);
+  // Box
+  const boxGeometry = new THREE.BoxGeometry(0.8, 14, 14);
   const boxMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
-  boxOne = new THREE.Mesh(boxGeometry, boxMaterial);
-  boxOne.position.set(16, 6, 8);
-  scene.add(boxOne);
+  rightSideWall = new THREE.Mesh(boxGeometry, boxMaterial);
+  rightSideWall.position.set(14, 2, 9);
+  scene.add(rightSideWall);
 
-  const boxTwoGeometry = new THREE.BoxGeometry(2, 2, 12);
-  const boxTwoMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
-  boxTwo = new THREE.Mesh(boxTwoGeometry, boxTwoMaterial);
-  boxTwo.position.set(-12, 6, 8);
-  scene.add(boxTwo);
-
-  const boxThreeGeometry = new THREE.BoxGeometry(12, 2, 2);
-  const boxThreeMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
-  boxThree = new THREE.Mesh(boxThreeGeometry, boxThreeMaterial);
-  boxThree.position.set(2, 9, 12);
-  scene.add(boxThree);
-  /*
-  const geometries = [
-      new THREE.TorusGeometry(1, 0.3, 16, 100),
-      new THREE.DodecahedronGeometry(2),
-      new THREE.SphereGeometry(2, 32, 32),
-      new THREE.ConeGeometry(1, 2, 4),
-  ];
-
-  for (let i = 0; i < 5; i++) {
-      const material = new THREE.MeshNormalMaterial({ 
-        flatShading: true,
-      });
-      const object = new THREE.Mesh(geometries[Math.floor(Math.random() * geometries.length)], material);
-      object.position.set(Math.random() * 30 - 20, Math.random() * 8 + 2, Math.random() * 2);
-      scene.add(object);
-      floatingObjects.push(object);
+  // 2F Boxes
+  const boxesGeometry = new THREE.BoxGeometry(3, 2, 2);
+  const boxesMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  for (let i = 0; i < 4; i++) {
+    const box = new THREE.Mesh(boxesGeometry, boxesMaterial);
+    box.position.set(i * 4 - 15, 18, -4);
+    box.rotation.y = Math.PI / 4 * i;
+    scene.add(box);
+    boxes.push(box);
   }
-  */
+
+  const pillerGeometry = new THREE.BoxGeometry(4, 20, 3);
+  const pillerMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  piller = new THREE.Mesh(pillerGeometry, pillerMaterial);
+  piller.position.set(-16, 2, 13);
+  scene.add(piller);
 
   // Lights
   const pinkLight = new THREE.PointLight(0xff00ff, 3, 50);
@@ -188,7 +217,7 @@ function createRetroSun() {
   });
 
   const sun = new THREE.Mesh(sunGeometry, sunMaterial);
-  sun.position.set(0, 8, -20);
+  sun.position.set(0, 8, -10);
   scene.add(sun);
 
 }
@@ -209,29 +238,24 @@ starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 const starMaterial = new THREE.PointsMaterial({
     color: 0x00ffff,
     size: 0.2,
-    transparent: false,
-    //opacity: 0.8,
+    transparent: true,
 });
 
-stars = new THREE.Points(starGeometry, starMaterial);
-scene.add(stars);
+const star = new THREE.Points(starGeometry, starMaterial);
+stars.push(star);
+scene.add(star);
 
 
 function animate() {
 
   requestAnimationFrame(animate);
 
-  //stars.rotation.y += 0.0005;
   grid.material.uniforms.time.value += 0.008;
-  pyramid.rotation.y += 0.01;
-
-  /*
-  floatingObjects.forEach((obj, index) => {
-      obj.rotation.x += 0.01 * index;
-      obj.rotation.y += 0.001 * index;
-      obj.position.y += Math.sin(Date.now() * 0.001 + index) * 0.02;
-  });
-  */
+  pyramid.rotation.y -= 0.01;
+  pyramid.rotation.z += 0.01;
+  sphere.rotation.y -= 0.01;
+  torus.rotation.y -= 0.01;
+  cylinder.rotation.y -= 0.004;
 
   composer.render();
 }
