@@ -4,37 +4,18 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
+const displayWidth = 8950;
+const displayHeight = 1080;
 let scene, camera, renderer, composer;
 let grid;
 let stars = [];
-let pyramid, cylinder, rightSideWall, piller;
+let pyramid, cylinder, rightSideWall, piller, secondFloor, sphere, torus, pole, poleTwo, sphereTwo;
 let boxes = [];
-let secondFloor;
-let sphere;
-let torus;
 
 init();
 animate();
 
-function init() {
-  // Scene
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x670096);
-
-  // Camera
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.set(1, 2, 25);
-
-  // Renderer
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
-
-  // Controls
-  const controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-
-  // Grid geoometry
+function createGrid() {
   const gridGeometry = new THREE.PlaneGeometry(50, 50, 50, 10);
   const gridMaterial = new THREE.ShaderMaterial({
         uniforms: {
@@ -62,14 +43,32 @@ function init() {
         `,
         transparent: true
     });
+  grid = new THREE.Mesh(gridGeometry, gridMaterial);
+  grid.rotation.x = -Math.PI / 2;
+  return grid;
+}
 
-    grid = new THREE.Mesh(gridGeometry, gridMaterial);
-    grid.rotation.x = -Math.PI / 2;
-    scene.add(grid);
+function init() {
+  // Scene
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x670096);
+
+  // Camera
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(1, 4, 25);
+
+  // Renderer
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // Controls
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
 
   //Sun Pedestal
-  const pedestalGeometry = new THREE.CylinderGeometry(10, 10, 2, 5);
-  const pedestalMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  const pedestalGeometry = new THREE.CylinderGeometry(10, 10, 2, 24);
+  const pedestalMaterial = new THREE.MeshNormalMaterial({ flatShading: true  });
   const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
   pedestal.position.set(0, -2, -10);
   scene.add(pedestal);
@@ -82,21 +81,32 @@ function init() {
   scene.add(secondFloor);
 
   // Pole
-  const poleGeometry = new THREE.CylinderGeometry(1.0, 1.0, 12, 10);
+  const poleGeometry = new THREE.CylinderGeometry(1.4, 1.4, 12, 10);
   const poleMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
-  const poleTwo = new THREE.Mesh(poleGeometry, poleMaterial);
-  const poleTwoX = -14;
-  const poleTwoY = 4;
-  const poleTwoZ = 4;
+  const pole = new THREE.Mesh(poleGeometry, poleMaterial);
+  const poleX = -16;
+  const poleY = 3;
+  const poleZ = 5;
+  pole.position.set(poleX, poleY, poleZ);
+  scene.add(pole);
+  
+  const sphereGeometry = new THREE.SphereGeometry(1.7, 3, 3);
+  const sphereMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+  sphere.position.set(poleX, poleY + 9, poleZ);
+  scene.add(sphere);
+
+  const poleTwoGeometry = new THREE.CylinderGeometry(1.4, 1.4, 8, 10);
+  const poleTwo = new THREE.Mesh(poleTwoGeometry, poleMaterial);
+  const poleTwoX = -16;
+  const poleTwoY = 1;
+  const poleTwoZ = 11;
   poleTwo.position.set(poleTwoX, poleTwoY, poleTwoZ);
   scene.add(poleTwo);
   
-  // Spehre
-  const sphereGeometry = new THREE.SphereGeometry(1.7, 12, 12);
-  const sphereMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
-  sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-  sphere.position.set(poleTwoX, poleTwoY + 9, poleTwoZ);
-  scene.add(sphere);
+  sphereTwo = new THREE.Mesh(sphereGeometry, sphereMaterial);
+  sphereTwo.position.set(poleTwoX, poleTwoY + 7, poleTwoZ);
+  scene.add(sphereTwo);
 
   // Torus
   const torusGeometry = new THREE.TorusGeometry(1, 0.3, 16, 100);
@@ -106,14 +116,14 @@ function init() {
   torus.rotation.x = Math.PI / 4;
   scene.add(torus);
 
-  //Floating geometries
-  const pyramidGeometry = new THREE.ConeGeometry(4, 6, 4);
+  // Pyramid
+  const pyramidGeometry = new THREE.ConeGeometry(4, 12, 4);
   const pyramidMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
   pyramid = new THREE.Mesh(pyramidGeometry, pyramidMaterial);
   pyramid.position.set(-10, -2, 8);
-  pyramid.rotation.z = Math.PI / 2;
   scene.add(pyramid);
 
+  // Cylinder
   const cylinderGeometry = new THREE.CylinderGeometry(2, 2, 70, 10, 4, false);
   const cylinderMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
   cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
@@ -121,11 +131,11 @@ function init() {
   cylinder.rotation.x = -Math.PI / 4;
   scene.add(cylinder);
 
-  // Box
-  const boxGeometry = new THREE.BoxGeometry(0.8, 14, 14);
-  const boxMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
-  rightSideWall = new THREE.Mesh(boxGeometry, boxMaterial);
-  rightSideWall.position.set(14, 2, 9);
+  // Wall
+  const wallGeometry = new THREE.BoxGeometry(0.8, 22, 18);
+  const wallMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
+  rightSideWall = new THREE.Mesh(wallGeometry, wallMaterial);
+  rightSideWall.position.set(18, 2, 9);
   scene.add(rightSideWall);
 
   // 2F Boxes
@@ -139,11 +149,15 @@ function init() {
     boxes.push(box);
   }
 
-  const pillerGeometry = new THREE.BoxGeometry(4, 20, 3);
+  // Left Piller
+  const pillerGeometry = new THREE.BoxGeometry(10, 10, 3);
   const pillerMaterial = new THREE.MeshNormalMaterial({ flatShading: true });
   piller = new THREE.Mesh(pillerGeometry, pillerMaterial);
-  piller.position.set(-16, 2, 13);
+  piller.position.set(-25, -2, 14);
   scene.add(piller);
+
+  const grid = createGrid();
+  scene.add(grid);
 
   // Lights
   const pinkLight = new THREE.PointLight(0xff00ff, 3, 50);
@@ -159,7 +173,7 @@ function init() {
   composer.addPass(new RenderPass(scene, camera));
   const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
-    2.0, 0.8, 0.85
+    1.0, 1.2, 0.85
   );
   composer.addPass(bloomPass);
 
@@ -176,7 +190,7 @@ function createRetroSun() {
 
   ctx.fillStyle = 'rgba(0, 0, 0, 0)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.font = 'Bold 84px sans-serif';
+  ctx.font = 'Bold 100px sans-serif';
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -189,7 +203,7 @@ function createRetroSun() {
   const textGeometry = new THREE.PlaneGeometry(8, 2); 
   const textMesh = new THREE.Mesh(textGeometry, textMaterial);
 
-  textMesh.position.set(0, 6, 1);
+  textMesh.position.set(0, 6, 9);
   scene.add(textMesh);
 
   const sunGeometry = new THREE.SphereGeometry(10, 32, 32);
@@ -219,7 +233,6 @@ function createRetroSun() {
   const sun = new THREE.Mesh(sunGeometry, sunMaterial);
   sun.position.set(0, 8, -10);
   scene.add(sun);
-
 }
 
 createRetroSun();
@@ -245,18 +258,19 @@ const star = new THREE.Points(starGeometry, starMaterial);
 stars.push(star);
 scene.add(star);
 
-
-function animate() {
-
-  requestAnimationFrame(animate);
-
+function updateObjects() {
   grid.material.uniforms.time.value += 0.008;
   pyramid.rotation.y -= 0.01;
   pyramid.rotation.z += 0.01;
   sphere.rotation.y -= 0.01;
+  sphereTwo.rotation.y -= 0.01;
   torus.rotation.y -= 0.01;
   cylinder.rotation.y -= 0.004;
+}
 
+function animate() {
+  requestAnimationFrame(animate);
+  updateObjects();
   composer.render();
 }
 
